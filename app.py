@@ -56,37 +56,37 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-# Movie recommendation function
+
 def recommend(movie):
     index = movies[movies['title'] == movie].index[0]
     distances = sorted(list(enumerate(similarity[index])), reverse=True, key=lambda x: x[1])
     recommended_movie_names = []
     
-    for i in distances[1:6]:  # Get top 5 recommendations
+    for i in distances[1:6]:  
         recommended_movie_names.append(movies.iloc[i[0]].title)
 
     return recommended_movie_names
 
-# Streamlit App UI
+
 st.markdown('<div class="header">🎬 Movie Recommender System</div>', unsafe_allow_html=True)
 
 movies = pickle.load(open('movies_list.pkl', 'rb'))
 similarity = pickle.load(open('similarity.pkl', 'rb'))
 
-# Dropdown for selecting a movie
+
 movie_list = movies['title'].values
 selected_movie = st.selectbox(
     "Choose a movie to get recommendations:",
     movie_list
 )
 
-# Show recommendations when the button is pressed
+
 if st.button('Show Recommendations', key="recommendations", help="Click to get movie recommendations", use_container_width=True):
     recommended_movie_names = recommend(selected_movie)
 
     st.markdown('<div class="subheader">Here are some Movie Recommendations for you:</div>', unsafe_allow_html=True)
     
-    # Display recommendations in columns with styling
+    
     col1, col2, col3, col4, col5 = st.columns(5)
 
     with col1:
