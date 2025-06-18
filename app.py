@@ -1,7 +1,31 @@
-import pickle
 import streamlit as st
+import pickle
+import os
+import gdown
 
-# CSS for styling
+# ---------- Download files from Google Drive if not present ----------
+def download_file_from_drive(file_id, output_path):
+    if not os.path.exists(output_path):
+        url = f"https://drive.google.com/uc?id={file_id}"
+        gdown.download(url, output_path, quiet=False)
+        print(f"✅ Downloaded {output_path}")
+
+# Google Drive file IDs
+MOVIES_ID = '1hP9MfYV3_MRZynUVcWvzHa4itEFQHQo_'
+SIMILARITY_ID = '1fVhAgloprV_RGg6SgPuZYvX5Wh3f3JeR'
+
+# Download if files not available locally
+download_file_from_drive(MOVIES_ID, 'movies_list.pkl')
+download_file_from_drive(SIMILARITY_ID, 'similarity.pkl')
+
+# ---------- Load the data ----------
+with open('movies_list.pkl', 'rb') as f:
+    movies = pickle.load(f)
+
+with open('similarity.pkl', 'rb') as f:
+    similarity = pickle.load(f)
+
+# ---------- Streamlit UI ----------
 st.markdown("""
     <style>
         .header {
@@ -56,39 +80,23 @@ st.markdown("""
     </style>
 """, unsafe_allow_html=True)
 
-
 def recommend(movie):
     index = movies[movies['title'] == movie].index[0]
     distances = sorted(list(enumerate(similarity[index])), reverse=True, key=lambda x: x[1])
     recommended_movie_names = []
-    
-    for i in distances[1:6]:  
+    for i in distances[1:6]:
         recommended_movie_names.append(movies.iloc[i[0]].title)
-
     return recommended_movie_names
-
 
 st.markdown('<div class="header">🎬 Movie Recommender System</div>', unsafe_allow_html=True)
 
-movies = pickle.load(open('movies_list.pkl', 'rb'))
-similarity = pickle.load(open('similarity.pkl', 'rb'))
-
-
 movie_list = movies['title'].values
-selected_movie = st.selectbox(
-    "Choose a movie to get recommendations:",
-    movie_list
-)
-
+selected_movie = st.selectbox("Choose a movie to get recommendations:", movie_list)
 
 if st.button('Show Recommendations', key="recommendations", help="Click to get movie recommendations", use_container_width=True):
     recommended_movie_names = recommend(selected_movie)
-
     st.markdown('<div class="subheader">Here are some Movie Recommendations for you:</div>', unsafe_allow_html=True)
-    
-    
     col1, col2, col3, col4, col5 = st.columns(5)
-
     with col1:
         st.markdown(f'<div class="movie-card"><p class="movie-name">{recommended_movie_names[0]}</p></div>', unsafe_allow_html=True)
     with col2:
